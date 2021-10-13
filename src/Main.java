@@ -16,20 +16,44 @@ public class Main {
     public static void main(String[] args) {
         int result = DEFAULT_VALUE;
         try {
+            /* .parseInt может выбросить NumberFormatException, который будет обработан
+                как RuntimeException(см.2ой блок catch).
+              */
             int var = Integer.parseInt(args[0]);
+            /* Метод suppressExceptionAndGetDefault(var) возврщает валидное значение, независимо от исключений.
+               Требует наличие значения по умолчанию. */
             result = suppressExceptionAndGetDefault(var);
             switch (var) {
                 case 1:
+                    /*  Метод suppressExceptionAndThrowRuntime() оборачивает оригинальное исключение в RuntimeException.
+                        Этот способ используется для экстренной остановки работы программы в методах,
+                        не предусматривающих пробрасывание исключений(т.е. в сигнатуре нет блока throws).
+                        Например методы интерфейса Iterator - hasNext, next.
+                     */
                     result = suppressExceptionAndThrowRuntime(var);
                     break;
                 case 2:
+                    /* Метод throwException() обрабатывает исключение и пробрасывает его же.
+                       Этот способ используется  для экстренной остановки работы программы, в случаях,
+                       когда исключение возникает на некой промежуточной стадии, не предусматривающей возвращения
+                       конечного результата, при этом продолжение работы программы на данном этапе невозможно.
+                       Перед пробрасыванием исключения требуются дополнительные действия.
+                      */
                     result = throwException(var);
                     break;
                 default:
+                    /* Метод suppressExceptionAndThrowCustom() оборачивает оригинальное исключение в пользовательское(кастомное).
+                       Этот способ используется для ограничения диапазона обрабатываемых исключений(обрабатываются только
+                       пользовательские исключения, остальные - пробрасываются дальше).
+                     */
                     result = suppressExceptionAndThrowCustom(var);
             }
+            /* Блоки catch обрабатывают исключения в порядке ОТ частного К общему.
+              Например, ArithmeticException у нас обрабатывается отдельно, хотя является наследником RuntimeException
+              и может быть обработан на общих основаниях. */
         } catch (ArithmeticException e) {
             System.out.println("Unable to get result. ArithmeticException: " + e.getMessage());
+            /* Данный catch использует бинарное ИЛИ, т.е. происходит обработка разных типов исключений оним способом.*/
         } catch (RuntimeException | CustomException e) {
             System.out.println(e.getClass().getName() + ": " + e.getMessage()
                     + (e.getCause() != null ? " Cause: " + e.getCause() : ""));
